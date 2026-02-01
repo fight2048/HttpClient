@@ -1,0 +1,58 @@
+{
+  "name": "httpClient",
+  "description": "A simple and efficient HTTP client for Node.js and the browser, built on top of Axios.",
+  "author": "Fight2048 <fight2048@outlook.com>",
+  "private": false,
+  "version": "1.0.0",
+  "type": "module",
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
+  "main": "./dist/httpClient.umd.cjs",
+  "module": "./dist/httpClient.js",
+  "types": "./index.d.ts",
+  "exports": {
+    "types": "./index.d.ts",
+    "import": "./dist/httpClient.js",
+    "require": "./dist/httpClient.umd.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fight2048/HttpClient.git"
+  },
+  "keywords": [
+    "xhr",
+    "http",
+    "ajax",
+    "promise",
+    "node",
+    "browser",
+    "fetch",
+    "rest",
+    "api",
+    "client"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fight2048/HttpClient/issues"
+  },
+  "homepage": "https://github.com/fight2048/HttpClient",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "axios": "^1.13.4",
+    "defu": "^6.1.4",
+    "qs": "^6.14.1"
+  },
+  "devDependencies": {
+    "@types/qs": "^6.14.0",
+    "axios-mock-adapter": "^2.1.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.16"
+  }
+}
