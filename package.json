@@ -1,7 +1,11 @@
 {
-  "name": "httpClient",
+  "name": "http-client-4ts",
   "description": "A simple and efficient HTTP client for Node.js and the browser, built on top of Axios.",
-  "author": "Fight2048 <fight2048@outlook.com>",
+  "author": {
+    "name": "Fight2048",
+    "email": "fight2048@outlook.com",
+    "url": "https://github.com/fight2048"
+  },
   "private": false,
   "version": "1.0.0",
   "type": "module",
@@ -19,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fight2048/HttpClient.git"
+    "url": "git+https://github.com/fight2048/HttpClient.git"
   },
   "keywords": [
     "xhr",
