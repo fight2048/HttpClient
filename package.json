@@ -6,6 +6,11 @@
     "email": "fight2048@outlook.com",
     "url": "https://github.com/fight2048"
   },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest"
+  },
   "private": false,
   "version": "1.0.0",
   "type": "module",
@@ -42,11 +47,6 @@
     "url": "https://github.com/fight2048/HttpClient/issues"
   },
   "homepage": "https://github.com/fight2048/HttpClient",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "test": "vitest"
-  },
   "dependencies": {
     "axios": "^1.13.4",
     "defu": "^6.1.4",
