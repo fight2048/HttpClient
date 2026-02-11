@@ -1,6 +1,5 @@
 import type { HttpClient } from '../HttpClient';
-import type { RequestClientConfig } from '../types';
-
+import type { HttpRequestConfig } from '../types';
 
 class FileUploader {
   private client: HttpClient;
@@ -12,7 +11,7 @@ class FileUploader {
   public async upload<T = any>(
     url: string,
     data: Record<string, any> & { file: Blob | File },
-    config?: RequestClientConfig,
+    config?: HttpRequestConfig,
   ): Promise<T> {
     const formData = new FormData();
 
@@ -26,7 +25,7 @@ class FileUploader {
       }
     });
 
-    const finalConfig: RequestClientConfig = {
+    const finalConfig: HttpRequestConfig = {
       ...config,
       headers: {
         'Content-Type': 'multipart/form-data',

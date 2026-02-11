@@ -1,71 +1,55 @@
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import type { RequestClientConfig, RequestClientOptions } from './types';
+import type { HttpRequestConfig, HttpClientConfig } from './types';
 import axios from 'axios';
-import qs from 'qs';
-import { defu as merge } from 'defu';
 import { FileDownloader } from './expand/Downloader';
 import { InterceptorManager } from './Interceptor';
-import { SSE } from './expand/SSE';
 import { FileUploader } from './expand/Uploader';
 
 class HttpClient {
-  public readonly instance: AxiosInstance;
+  public readonly INSTANCE: AxiosInstance;
 
   public addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
   public addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
   public download: FileDownloader['download'];
-  public postSSE: SSE['postSSE'];
-  public requestSSE: SSE['requestSSE'];
   public upload: FileUploader['upload'];
 
-  // 是否正在刷新token
-  public isRefreshing = false;
-  // 刷新token队列
-  public refreshTokenQueue: ((token: string) => void)[] = [];
-
+  private readonly defaultConfig: HttpClientConfig = {
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    // 默认超时时间
+    timeout: 30 * 1000,
+  };
   /**
    * 构造函数，用于创建Axios实例
    * @param options - Axios请求配置，可选
    */
-  constructor(options: RequestClientOptions = {}) {
+  constructor(options: HttpClientConfig = {}) {
     // 合并默认配置和传入的配置
-    const defaultConfig: RequestClientOptions = {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-      },
-      responseReturn: 'raw',
-      // 默认超时时间
-      timeout: 30 * 1000,
-    };
-    const { ...axiosConfig } = options;
-    const requestConfig = merge(axiosConfig, defaultConfig);
-    requestConfig.paramsSerializer = getParamsSerializer(requestConfig.paramsSerializer);
-    this.instance = axios.create(requestConfig);
+    const requestConfig = { ...this.defaultConfig, ...options };
+    this.INSTANCE = axios.create(requestConfig);
 
     bindMethods(this);
 
     // 实例化拦截器管理器
-    const interceptorManager = new InterceptorManager(this.instance);
+    const interceptorManager = new InterceptorManager(this.INSTANCE);
     this.addRequestInterceptor = interceptorManager.addRequestInterceptor.bind(interceptorManager);
     this.addResponseInterceptor = interceptorManager.addResponseInterceptor.bind(interceptorManager);
 
     // 实例化文件上传器
     const fileUploader = new FileUploader(this);
     this.upload = fileUploader.upload.bind(fileUploader);
+
     // 实例化文件下载器
     const fileDownloader = new FileDownloader(this);
     this.download = fileDownloader.download.bind(fileDownloader);
-    // 实例化SSE模块
-    const sse = new SSE(this);
-    this.postSSE = sse.postSSE.bind(sse);
-    this.requestSSE = sse.requestSSE.bind(sse);
   }
 
   /**
    * 获取基础URL
    */
   public getBaseUrl() {
-    return this.instance.defaults.baseURL;
+    return this.INSTANCE.defaults.baseURL;
   }
 
   /**
@@ -73,7 +57,7 @@ class HttpClient {
    */
   public delete<T = any>(
     url: string,
-    config?: RequestClientConfig,
+    config?: HttpRequestConfig,
   ): Promise<T> {
     return this.request<T>(url, { ...config, method: 'DELETE' });
   }
@@ -81,7 +65,7 @@ class HttpClient {
   /**
    * GET请求方法
    */
-  public get<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
+  public get<T = any>(url: string, config?: HttpRequestConfig): Promise<T> {
     return this.request<T>(url, { ...config, method: 'GET' });
   }
 
@@ -91,7 +75,7 @@ class HttpClient {
   public post<T = any>(
     url: string,
     data?: any,
-    config?: RequestClientConfig,
+    config?: HttpRequestConfig,
   ): Promise<T> {
     return this.request<T>(url, { ...config, data, method: 'POST' });
   }
@@ -102,7 +86,7 @@ class HttpClient {
   public put<T = any>(
     url: string,
     data?: any,
-    config?: RequestClientConfig,
+    config?: HttpRequestConfig,
   ): Promise<T> {
     return this.request<T>(url, { ...config, data, method: 'PUT' });
   }
@@ -112,16 +96,10 @@ class HttpClient {
    */
   public async request<T>(
     url: string,
-    config: RequestClientConfig,
+    config: HttpRequestConfig,
   ): Promise<T> {
     try {
-      const response: AxiosResponse<T> = await this.instance({
-        url,
-        ...config,
-        ...(config.paramsSerializer
-          ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) }
-          : {}),
-      });
+      const response: AxiosResponse<T> = await this.INSTANCE({ url, ...config });
       return response as T;
     } catch (error: any) {
       throw error.response ? error.response.data : error;
@@ -130,26 +108,6 @@ class HttpClient {
 }
 
 export { HttpClient };
-
-function getParamsSerializer(paramsSerializer: RequestClientOptions['paramsSerializer']) {
-  if (isString(paramsSerializer)) {
-    switch (paramsSerializer) {
-      case 'brackets': {
-        return (params: any) => qs.stringify(params, { arrayFormat: 'brackets' });
-      }
-      case 'comma': {
-        return (params: any) => qs.stringify(params, { arrayFormat: 'comma' });
-      }
-      case 'indices': {
-        return (params: any) => qs.stringify(params, { arrayFormat: 'indices' });
-      }
-      case 'repeat': {
-        return (params: any) => qs.stringify(params, { arrayFormat: 'repeat' });
-      }
-    }
-  }
-  return paramsSerializer;
-}
 
 /**
  * 反射绑定类实例的方法到该实例上，确保方法中的`this`引用正确。
@@ -170,6 +128,3 @@ export function bindMethods<T extends object>(instance: T): void {
   });
 }
 
-export const isString = (val: unknown): val is string => {
-  return typeof val === 'string';
-}

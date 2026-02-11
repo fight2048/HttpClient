@@ -7,7 +7,7 @@ import { FileDownloader } from './Downloader';
 describe('fileDownloader', () => {
   let fileDownloader: FileDownloader;
   const mockAxiosInstance = {
-    get: vi.fn(),
+    request: vi.fn(),
   } as any;
 
   beforeEach(() => {
@@ -23,13 +23,13 @@ describe('fileDownloader', () => {
     const mockBlob = new Blob(['file content'], { type: 'text/plain' });
     const mockResponse: Blob = mockBlob;
 
-    mockAxiosInstance.get.mockResolvedValueOnce(mockResponse);
+    mockAxiosInstance.request.mockResolvedValueOnce(mockResponse);
 
-    const result = await fileDownloader.download(url);
+    const response = await fileDownloader.download(url);
 
-    expect(result).toBeInstanceOf(Blob);
-    expect(result).toEqual(mockBlob);
-    expect(mockAxiosInstance.get).toHaveBeenCalledWith(url, {
+    expect(response).toBeInstanceOf(Blob);
+    expect(response).toEqual(mockBlob);
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(url, {
       method: 'GET',
       responseType: 'blob',
       responseReturn: 'body',
@@ -41,16 +41,16 @@ describe('fileDownloader', () => {
     const mockBlob = new Blob(['file content'], { type: 'text/plain' });
     const mockResponse: Blob = mockBlob;
 
-    mockAxiosInstance.get.mockResolvedValueOnce(mockResponse);
+    mockAxiosInstance.request.mockResolvedValueOnce(mockResponse);
 
     const customConfig: AxiosRequestConfig = {
       headers: { 'Custom-Header': 'value' },
     };
 
-    const result = await fileDownloader.download(url, customConfig);
-    expect(result).toBeInstanceOf(Blob);
-    expect(result).toEqual(mockBlob);
-    expect(mockAxiosInstance.get).toHaveBeenCalledWith(url, {
+    const response = await fileDownloader.download(url, customConfig);
+    expect(response).toBeInstanceOf(Blob);
+    expect(response).toEqual(mockBlob);
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(url, {
       ...customConfig,
       method: 'GET',
       responseType: 'blob',
@@ -60,13 +60,13 @@ describe('fileDownloader', () => {
 
   it('handle errors gracefully', async () => {
     const url = 'https://example.com/file';
-    mockAxiosInstance.get.mockRejectedValueOnce(new Error('Network Error'));
+    mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network Error'));
     await expect(fileDownloader.download(url)).rejects.toThrow('Network Error');
   });
 
   it('handle empty URL gracefully', async () => {
     const url = '';
-    mockAxiosInstance.get.mockRejectedValueOnce(
+    mockAxiosInstance.request.mockRejectedValueOnce(
       new Error('Request failed with status code 404'),
     );
 
@@ -75,7 +75,7 @@ describe('fileDownloader', () => {
 
   it('handle null URL gracefully', async () => {
     const url = null as unknown as string;
-    mockAxiosInstance.get.mockRejectedValueOnce(
+    mockAxiosInstance.request.mockRejectedValueOnce(
       new Error('Request failed with status code 404'),
     );
 
@@ -99,10 +99,10 @@ describe('fileDownloader use other method', () => {
 
     mockAxiosInstance.request.mockResolvedValueOnce(mockResponse);
 
-    const result = await fileDownloader.download(url);
+    const response = await fileDownloader.download(url);
 
-    expect(result).toBeInstanceOf(Blob);
-    expect(result).toEqual(mockBlob);
+    expect(response).toBeInstanceOf(Blob);
+    expect(response).toEqual(mockBlob);
     expect(mockAxiosInstance.request).toHaveBeenCalledWith(url, {
       method: 'GET',
       responseType: 'blob',
@@ -114,7 +114,7 @@ describe('fileDownloader use other method', () => {
     const url = 'https://example.com/file';
 
     const mockAxiosInstance = {
-      post: vi.fn(),
+      request: vi.fn(),
     } as any;
 
     fileDownloader = new FileDownloader(mockAxiosInstance);
@@ -126,11 +126,11 @@ describe('fileDownloader use other method', () => {
 
     await fileDownloader.download(url, customConfig);
 
-    expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(
       url,
-      { name: 'aa' },
       {
         method: 'POST',
+        data: { name: 'aa' },
         responseType: 'blob',
         responseReturn: 'body',
       },
@@ -140,14 +140,14 @@ describe('fileDownloader use other method', () => {
   it('handle errors', async () => {
     const url = 'https://example.com/file';
     const mockAxiosInstance = {
-      post: vi.fn(),
+      request1: vi.fn(),
     } as any;
 
     fileDownloader = new FileDownloader(mockAxiosInstance);
-    await expect(() =>
-      fileDownloader.download(url, { method: 'postt' }),
-    ).rejects.toThrow(
-      'RequestClient does not support method "POSTT". Please ensure the method is properly implemented in your RequestClient instance.',
-    );
+
+    await expect(() => fileDownloader.download(url, { method: 'POST' }))
+      .rejects.toThrow(
+        `HttpClient does not support method "request". Please ensure the method is properly implemented in your client instance.`,
+      );
   });
 });

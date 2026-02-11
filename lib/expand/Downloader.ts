@@ -1,5 +1,5 @@
-import type { HttpClient } from '../HttpClient';
-import type { RequestClientConfig } from '../types';
+import type { HttpClient } from "../HttpClient";
+import type { HttpRequestConfig } from "../types";
 
 type DownloadRequestConfig = {
   /**
@@ -7,11 +7,16 @@ type DownloadRequestConfig = {
    * raw: 原始的AxiosResponse，包括headers、status等。
    * body: 只返回响应数据的BODY部分(Blob)
    */
-  responseReturn?: 'body' | 'raw';
-} & Omit<RequestClientConfig, 'responseReturn'>;
+  responseReturn?: "body" | "raw";
+} & Omit<HttpRequestConfig, "responseReturn">;
 
 class FileDownloader {
   private client: HttpClient;
+  private readonly defaultConfig: DownloadRequestConfig = {
+    responseReturn: "body",
+    method: "GET",
+    responseType: "blob",
+  };
 
   constructor(client: HttpClient) {
     this.client = client;
@@ -20,40 +25,23 @@ class FileDownloader {
    * 下载文件
    * @param url 文件的完整链接
    * @param config 配置信息，可选。
-   * @returns 如果config.responseReturn为'body'，则返回Blob(默认)，否则返回RequestResponse<Blob>
+   * @returns 如果config.responseReturn为'body'，则返回Blob(默认)，否则返回HttpResponse<Blob>
    */
   public async download<T = Blob>(
     url: string,
     config?: DownloadRequestConfig,
   ): Promise<T> {
-    const finalConfig: DownloadRequestConfig = {
-      responseReturn: 'body',
-      method: 'GET',
+    // 合并默认配置和传入的配置
+    const requestConfig: DownloadRequestConfig = {
+      ...this.defaultConfig,
       ...config,
-      responseType: 'blob',
     };
-
-    // Prefer a generic request if available; otherwise, dispatch to method-specific calls.
-    const method = (finalConfig.method || 'GET').toUpperCase();
-    const clientAny = this.client as any;
-
-    if (typeof clientAny.request === 'function') {
-      return await clientAny.request(url, finalConfig);
+    if (!this.client.request) {
+      throw new Error(
+        `HttpClient does not support method "request". Please ensure the method is properly implemented in your client instance.`,
+      );
     }
-    const lower = method.toLowerCase();
-
-    if (typeof clientAny[lower] === 'function') {
-      if (['POST', 'PUT'].includes(method)) {
-        const { data, ...rest } = finalConfig as Record<string, any>;
-        return await clientAny[lower](url, data, rest);
-      }
-
-      return await clientAny[lower](url, finalConfig);
-    }
-
-    throw new Error(
-      `RequestClient does not support method "${method}". Please ensure the method is properly implemented in your RequestClient instance.`,
-    );
+    return await this.client.request(url, requestConfig);
   }
 }
 
