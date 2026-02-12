@@ -25,7 +25,7 @@ describe('httpClient', () => {
     mock.onGet('test/url')
       .reply(200, mockData);
 
-    const response = await client.get('test/url');
+    const response = await client.get<typeof mockData>('test/url');
 
     expect(response.data)
       .toEqual(mockData);
@@ -38,7 +38,7 @@ describe('httpClient', () => {
     mock.onPost('/test/post', postData)
       .reply(200, mockData);
 
-    const response = await client.post('/test/post', postData);
+    const response = await client.post<typeof mockData>('/test/post', postData);
 
     expect(response.data)
       .toEqual(mockData);
@@ -51,7 +51,7 @@ describe('httpClient', () => {
     mock.onPut('/test/put', putData)
       .reply(200, mockData);
 
-    const response = await client.put('/test/put', putData);
+    const response = await client.put<typeof mockData>('/test/put', putData);
 
     expect(response.data)
       .toEqual(mockData);
@@ -62,7 +62,7 @@ describe('httpClient', () => {
 
     mock.onDelete('/test/delete')
       .reply(200, mockData);
-    const response = await client.delete('/test/delete');
+    const response = await client.delete<typeof mockData>('/test/delete');
 
     expect(response.data)
       .toEqual(mockData);
@@ -102,7 +102,7 @@ describe('httpClient', () => {
           : [400, mockError];
       });
 
-    const response = await client.upload('/test/upload', { file });
+    const response = await client.upload<typeof mockData>('/test/upload', { file });
     expect(response.data).toEqual(mockData);
   });
 
@@ -111,8 +111,8 @@ describe('httpClient', () => {
 
     mock.onGet('/test/download').reply(200, file);
 
-    const response = await client.download('/test/download');
+    const response = await client.download<{ data: Blob }>('/test/download');
 
-    expect(response).toBeInstanceOf(Blob);
+    expect(response.data).toBeInstanceOf(Blob);
   });
 });
