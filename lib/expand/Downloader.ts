@@ -4,7 +4,7 @@ import type { HttpRequestConfig } from "../types";
 /**
  * 下载请求配置
  */
-type DownloadRequestConfig = {
+export type DownloadRequestConfig = {
   /**
    * 定义期望获得的数据类型
    * body: 只返回响应数据的BODY部分(Blob)
