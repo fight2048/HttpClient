@@ -1,4 +1,4 @@
-import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosError, AxiosInstance } from 'axios';
 
 import type {
   HttpResponse,

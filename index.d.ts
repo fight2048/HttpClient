@@ -81,3 +81,10 @@ export type {
     HttpResponse,
     ResponseInterceptorConfig,
 };
+
+export {
+    FileDownloader,
+    FileUploader,
+    InterceptorManager,
+    HttpClient
+} from './lib';

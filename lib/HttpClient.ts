@@ -2,8 +2,8 @@ import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import type { HttpRequestConfig, HttpClientConfig } from './types';
 import axios from 'axios';
 import { FileDownloader } from './expand/Downloader';
-import { InterceptorManager } from './Interceptor';
 import { FileUploader } from './expand/Uploader';
+import { InterceptorManager } from './Interceptor';
 
 /**
  * HTTP客户端类
