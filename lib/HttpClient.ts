@@ -1,18 +1,31 @@
-import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import type { HttpRequestConfig, HttpClientConfig } from './types';
 import axios from 'axios';
 import { FileDownloader } from './expand/Downloader';
 import { InterceptorManager } from './Interceptor';
 import { FileUploader } from './expand/Uploader';
 
+/**
+ * HTTP客户端类
+ * 基于Axios封装的HTTP客户端，支持请求/响应拦截器、文件上传下载等功能
+ */
 class HttpClient {
+  /** Axios实例 */
   public readonly INSTANCE: AxiosInstance;
 
-  public addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
-  public addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
-  public download: FileDownloader['download'];
-  public upload: FileUploader['upload'];
+  /** 添加请求拦截器 */
+  public readonly addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
 
+  /** 添加响应拦截器 */
+  public readonly addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
+
+  /** 下载文件方法 */
+  public readonly download: FileDownloader['download'];
+
+  /** 上传文件方法 */
+  public readonly upload: FileUploader['upload'];
+
+  /** 默认配置 */
   private readonly defaultConfig: HttpClientConfig = {
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
@@ -20,6 +33,7 @@ class HttpClient {
     // 默认超时时间
     timeout: 30 * 1000,
   };
+
   /**
    * 构造函数，用于创建Axios实例
    * @param options - Axios请求配置，可选
@@ -47,15 +61,20 @@ class HttpClient {
 
   /**
    * 获取基础URL
+   * @returns 基础URL字符串
    */
-  public getBaseUrl() {
+  public getBaseUrl(): string | undefined {
     return this.INSTANCE.defaults.baseURL;
   }
 
   /**
    * DELETE请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param config - 请求配置
+   * @returns Promise对象
    */
-  public delete<T = any>(
+  public delete<T = unknown>(
     url: string,
     config?: HttpRequestConfig,
   ): Promise<T> {
@@ -64,17 +83,48 @@ class HttpClient {
 
   /**
    * GET请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param config - 请求配置
+   * @returns Promise对象
    */
-  public get<T = any>(url: string, config?: HttpRequestConfig): Promise<T> {
+  public get<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T> {
     return this.request<T>(url, { ...config, method: 'GET' });
   }
 
   /**
-   * POST请求方法
+   * HEAD请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param config - 请求配置
+   * @returns Promise对象
    */
-  public post<T = any>(
+  public head<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T> {
+    return this.request<T>(url, { ...config, method: 'HEAD' });
+  }
+
+  /**
+   * OPTIONS请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param config - 请求配置
+   * @returns Promise对象
+   */
+  public options<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T> {
+    return this.request<T>(url, { ...config, method: 'OPTIONS' });
+  }
+
+  /**
+   * POST请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param data - 请求数据
+   * @param config - 请求配置
+   * @returns Promise对象
+   */
+  public post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: HttpRequestConfig,
   ): Promise<T> {
     return this.request<T>(url, { ...config, data, method: 'POST' });
@@ -82,17 +132,42 @@ class HttpClient {
 
   /**
    * PUT请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param data - 请求数据
+   * @param config - 请求配置
+   * @returns Promise对象
    */
-  public put<T = any>(
+  public put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: HttpRequestConfig,
   ): Promise<T> {
     return this.request<T>(url, { ...config, data, method: 'PUT' });
   }
 
   /**
+   * PATCH请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param data - 请求数据
+   * @param config - 请求配置
+   * @returns Promise对象
+   */
+  public patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: HttpRequestConfig,
+  ): Promise<T> {
+    return this.request<T>(url, { ...config, data, method: 'PATCH' });
+  }
+
+  /**
    * 通用的请求方法
+   * @typeParam T - 响应数据的类型
+   * @param url - 请求URL
+   * @param config - 请求配置
+   * @returns Promise对象
    */
   public async request<T>(
     url: string,
@@ -100,31 +175,43 @@ class HttpClient {
   ): Promise<T> {
     try {
       const response: AxiosResponse<T> = await this.INSTANCE({ url, ...config });
-      return response as T;
-    } catch (error: any) {
-      throw error.response ? error.response.data : error;
+      return response as unknown as T;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<unknown>;
+        throw axiosError.response ? axiosError.response.data : error;
+      }
+      throw error;
     }
   }
 }
 
-export { HttpClient };
-
 /**
- * 反射绑定类实例的方法到该实例上，确保方法中的`this`引用正确。
- * @param instance
+ * 反射绑定类实例的方法到该实例上，确保方法中的`this`引用正确
+ * @param instance - 类实例
  */
 export function bindMethods<T extends object>(instance: T): void {
   const prototype = Object.getPrototypeOf(instance);
   const propertyNames = Object.getOwnPropertyNames(prototype);
 
   propertyNames.forEach((propertyName) => {
+    if (propertyName === 'constructor') {
+      return;
+    }
+
     const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
     const propertyValue = instance[propertyName as keyof T];
 
-    if (typeof propertyValue === 'function' && propertyName !== 'constructor'
-      && descriptor && !descriptor.get && !descriptor.set) {
+    if (
+      typeof propertyValue === 'function' &&
+      descriptor &&
+      !descriptor.get &&
+      !descriptor.set
+    ) {
       instance[propertyName as keyof T] = propertyValue.bind(instance);
     }
   });
 }
+
+export { HttpClient };
 

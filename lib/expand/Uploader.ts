@@ -1,16 +1,38 @@
 import type { HttpClient } from '../HttpClient';
 import type { HttpRequestConfig } from '../types';
 
+/**
+ * 文件上传数据接口
+ */
+interface UploadData {
+  // 要上传的文件
+  file: Blob | File;
+  // 其他表单字段
+  [key: string]: any;
+}
+
+/**
+ * 文件上传器类
+ * 负责处理文件上传相关的逻辑
+ */
 class FileUploader {
-  private client: HttpClient;
+  private readonly client: HttpClient;
 
   constructor(client: HttpClient) {
     this.client = client;
   }
 
-  public async upload<T = any>(
+  /**
+   * 上传文件
+   * @typeParam T - 响应数据的类型
+   * @param url - 上传URL
+   * @param data - 上传数据，包含file字段
+   * @param config - 请求配置
+   * @returns Promise对象
+   */
+  public async upload<T = unknown>(
     url: string,
-    data: Record<string, any> & { file: Blob | File },
+    data: UploadData,
     config?: HttpRequestConfig,
   ): Promise<T> {
     const formData = new FormData();
@@ -25,7 +47,7 @@ class FileUploader {
       }
     });
 
-    const finalConfig: HttpRequestConfig = {
+    const requestConfig: HttpRequestConfig = {
       ...config,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -33,7 +55,7 @@ class FileUploader {
       },
     };
 
-    return this.client.post(url, formData, finalConfig);
+    return this.client.post<T>(url, formData, requestConfig);
   }
 }
 
