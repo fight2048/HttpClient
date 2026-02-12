@@ -1,5 +1,5 @@
-import { R } from '../lib';
-import { client } from './request';
+import {R} from '../lib';
+import {client} from './request';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -19,10 +19,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </div>
 `
 
-client.request<R<unknown>>('/api', {
-  method: 'get',
+client.request<R<unknown>>({
+    url: '/api',
+    method: 'get',
 }).then((response) => {
-  console.log('请求成功：', response.data)
+    console.log('请求成功：', response.data)
 }).catch((error) => {
-  console.error('请求失败：', error)
+    console.error('请求失败：', error)
 })
