@@ -4,7 +4,7 @@ import type {
   AxiosResponse,
   CreateAxiosDefaults,
   InternalAxiosRequestConfig,
-} from 'axios';
+} from "axios";
 
 /**
  * HTTP客户端配置类型
@@ -24,7 +24,9 @@ type HttpRequestConfig<T = unknown> = AxiosRequestConfig<T>;
  * 扩展AxiosResponse，添加config属性
  * @typeParam T - 响应数据的类型
  */
-type HttpResponse<T = unknown> = AxiosResponse<T> & { config: HttpRequestConfig<T>; };
+type HttpResponse<T = unknown> = AxiosResponse<T> & {
+  config: HttpRequestConfig<T>;
+};
 
 /**
  * 请求拦截器配置
@@ -40,7 +42,9 @@ interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
  * @typeParam T - 响应数据的类型
  */
 interface ResponseInterceptorConfig<T = unknown> {
-  fulfilled?: (response: HttpResponse<T>) => HttpResponse | Promise<HttpResponse>;
+  fulfilled?: (
+    response: HttpResponse<T>,
+  ) => HttpResponse | Promise<HttpResponse>;
   rejected?: (error: AxiosError) => Promise<never>;
 }
 
@@ -55,25 +59,26 @@ type HandleErrorMessage = (message: string, error: unknown) => void;
  * HTTP响应体标准格式
  * @typeParam T - 业务数据的类型
  */
-interface HttpResponseBody<T = unknown> {
+interface R<T = unknown> {
   /**
    * 业务状态码
    * @example 200 表示成功
    * @example 400, 500 等表示错误
    */
-  code: number;
-  /**
-   * 业务数据
-   */
-  data?: T;
+  code: number | string;
   /**
    * 响应消息
    */
   message?: string;
+
+  /**
+   * 业务数据
+   */
+  data?: T;
 }
 
 export type {
-  HttpResponseBody,
+  R as HttpResponseBody,
   HandleErrorMessage,
   HttpRequestConfig,
   HttpClientConfig,

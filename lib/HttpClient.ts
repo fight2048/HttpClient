@@ -3,7 +3,7 @@ import type { HttpRequestConfig, HttpClientConfig } from './types';
 import axios from 'axios';
 import { FileDownloader } from './expand/Downloader';
 import { FileUploader } from './expand/Uploader';
-import { InterceptorManager } from './Interceptor';
+import { InterceptorManager } from './InterceptorManager';
 
 /**
  * HTTP客户端类
