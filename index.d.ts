@@ -1,4 +1,4 @@
-export type {
+export {
     R,
     HandleErrorMessage,
     HttpRequestConfig,
@@ -6,9 +6,6 @@ export type {
     RequestInterceptorConfig,
     HttpResponse,
     ResponseInterceptorConfig,
-} from './lib';
-
-export {
     FileDownloader,
     FileUploader,
     InterceptorManager,

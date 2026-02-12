@@ -49,7 +49,7 @@ interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
  * 响应拦截器配置
  * @typeParam T - 响应数据的类型
  */
-interface ResponseInterceptorConfig<T = unknown> {
+interface ResponseInterceptorConfig<T = any> {
   fulfilled?: (
     response: HttpResponse<T>,
   ) => HttpResponse | Promise<HttpResponse>;

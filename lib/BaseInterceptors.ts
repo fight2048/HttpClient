@@ -1,7 +1,6 @@
 import type {
   RequestInterceptorConfig,
   ResponseInterceptorConfig,
-  HttpResponse
 } from 'http-client-4ts';
 import {
   InternalAxiosRequestConfig,
@@ -15,7 +14,7 @@ export const defaultRequestInterceptor: RequestInterceptorConfig = {
       && typeof config.data === 'object'
       && !Array.isArray(config.data)) {
       const d = Object.entries(config.data)
-        .filter((value, index) => {
+        .filter((value, _) => {
           return value[1] ?? false
         })
       config.data = Object.fromEntries(d)
@@ -25,7 +24,7 @@ export const defaultRequestInterceptor: RequestInterceptorConfig = {
       && typeof config.params === 'object'
       && !Array.isArray(config.params)) {
       const d = Object.entries(config.params)
-        .filter((value, index) => {
+        .filter((value, _) => {
           return value[1] ?? false
         })
       config.params = Object.fromEntries(d)
@@ -37,27 +36,28 @@ export const defaultRequestInterceptor: RequestInterceptorConfig = {
   },
 }
 
-export const defaultResponseInterceptor: ResponseInterceptorConfig = {
-  fulfilled: (response: HttpResponse) => {
-    if (response.status < 200 || response.status >= 400) {
-      throw Object.assign({}, response, { response });
-    }
+export const defaultResponseInterceptor = (): ResponseInterceptorConfig => {
+  return {
+    fulfilled: (response) => {
+      const { config, data, status } = response;
 
-    if (!response?.config?.responseReturn || response?.config?.responseReturn === 'raw') {
+      if (status < 200 || status >= 400) {
+        throw Object.assign({}, response, { response });
+      }
+
+      if (config?.responseReturn === 'raw') {
+        return response;
+      }
+
+      if (config?.responseReturn === 'body') {
+        return data;
+      }
+
+      if (config?.responseReturn === 'data') {
+        return (data as { data: unknown })?.data;
+      }
+
       return response;
-    }
-
-    if (response?.config?.responseReturn === 'body') {
-      return response?.data ?? {};
-    }
-
-    if (response?.config?.responseReturn === 'data') {
-      return response?.data?.data ?? {};
-    }
-
-    return response;
-  },
-  rejected: (error: AxiosError) => {
-    return Promise.reject(error);
-  }
+    },
+  };
 };
