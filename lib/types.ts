@@ -17,7 +17,15 @@ type HttpClientConfig = CreateAxiosDefaults;
  * 使用泛型T约束请求数据的类型，提高类型安全性
  * @typeParam T - 请求数据的类型，默认为unknown避免使用any
  */
-type HttpRequestConfig<T = unknown> = AxiosRequestConfig<T>;
+type HttpRequestConfig<T = unknown> = AxiosRequestConfig<T> & {
+  /**
+   * 响应数据的返回方式。
+   * - raw: 原始的AxiosResponse，包括headers、status等，不做是否成功请求的检查。
+   * - body: 返回响应数据的BODY部分（只会根据status检查请求是否成功，忽略对code的判断，这种情况下应由调用方检查请求是否成功）。
+   * - data: 解构响应的BODY数据，只返回其中的data节点数据（会检查status和code是否为成功状态）。
+   */
+  responseReturn?: "body" | "data" | "raw";
+};
 
 /**
  * HTTP响应类型
@@ -78,7 +86,7 @@ interface R<T = unknown> {
 }
 
 export type {
-  R as HttpResponseBody,
+  R,
   HandleErrorMessage,
   HttpRequestConfig,
   HttpClientConfig,
