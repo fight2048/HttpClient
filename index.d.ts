@@ -8,22 +8,19 @@ import type {
 } from "axios";
 import {DownloadRequestConfig, FileDownloader, FileUploader, HttpClient, InterceptorManager} from "./lib";
 import type {HttpClientConfig, HttpRequestConfig, RequestInterceptorConfig, ResponseInterceptorConfig} from './types';
-import {FileDownloader} from './expand/Downloader';
-import {FileUploader} from './expand/Uploader';
-import {InterceptorManager} from './InterceptorManager';
 
 /**
  * HTTP客户端配置类型
  * 基于Axios默认配置，扩展了自定义选项
  */
-type HttpClientConfig = CreateAxiosDefaults;
+export type HttpClientConfig = CreateAxiosDefaults;
 
 /**
  * HTTP请求配置类型
  * 使用泛型T约束请求数据的类型，提高类型安全性
  * @typeParam T - 请求数据的类型，默认为unknown避免使用any
  */
-type HttpRequestConfig<T = unknown> = AxiosRequestConfig<T> & {
+export type HttpRequestConfig<T = unknown> = AxiosRequestConfig<T> & {
     /**
      * 响应数据的返回方式。
      * - raw: 原始的AxiosResponse，包括headers、status等，不做是否成功请求的检查。
@@ -38,7 +35,7 @@ type HttpRequestConfig<T = unknown> = AxiosRequestConfig<T> & {
  * 扩展AxiosResponse，添加config属性
  * @typeParam T - 响应数据的类型
  */
-type HttpResponse<T = unknown> = AxiosResponse<T> & {
+export type HttpResponse<T = unknown> = AxiosResponse<T> & {
     config: HttpRequestConfig<T>;
 };
 
@@ -46,7 +43,7 @@ type HttpResponse<T = unknown> = AxiosResponse<T> & {
  * 请求拦截器配置
  * @typeParam T - 请求配置的类型
  */
-interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
+export interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
     fulfilled?: (config: T) => T | Promise<T>;
     rejected?: (error: AxiosError) => Promise<never>;
 }
@@ -55,7 +52,7 @@ interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
  * 响应拦截器配置
  * @typeParam T - 响应数据的类型
  */
-interface ResponseInterceptorConfig<T = any> {
+export interface ResponseInterceptorConfig<T = any> {
     fulfilled?: (
         response: HttpResponse<T>,
     ) => HttpResponse | Promise<HttpResponse>;
@@ -67,13 +64,13 @@ interface ResponseInterceptorConfig<T = any> {
  * @param message - 错误消息
  * @param error - 原始错误对象
  */
-type HandleErrorMessage = (message: string, error: unknown) => void;
+export type HandleErrorMessage = (message: string, error: unknown) => void;
 
 /**
  * HTTP响应体标准格式
  * @typeParam T - 业务数据的类型
  */
-interface R<T = unknown> {
+export interface R<T = unknown> {
     /**
      * 业务状态码
      * @example 200 表示成功

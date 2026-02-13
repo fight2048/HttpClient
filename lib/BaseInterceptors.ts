@@ -1,5 +1,5 @@
-import type {RequestInterceptorConfig, ResponseInterceptorConfig,} from './types.ts';
-import {HttpResponse} from "./types.ts";
+import type {RequestInterceptorConfig, ResponseInterceptorConfig,} from './types';
+import {HttpResponse} from "./types";
 import {AxiosError, InternalAxiosRequestConfig,} from 'axios';
 
 export const defaultRequestInterceptor: RequestInterceptorConfig = {
