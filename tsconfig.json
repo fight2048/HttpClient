@@ -14,6 +14,7 @@
     "allowImportingTsExtensions": false,
     "isolatedModules": true,
     "moduleDetection": "force",
+    //启用该选项后，TypeScript 编译器只会对代码进行类型检查，但不会生成任何 JavaScript 输出文件（.js、.d.ts 等）
     "noEmit": true,
     /* Linting */
     "strict": true,
