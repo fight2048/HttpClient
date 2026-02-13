@@ -21,6 +21,13 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "declaration": true,
+    "rootDir": ".",
+    // 可选：指定.d.ts文件输出目录（默认和编译后的js同目录）,
+    "declarationDir": "./dist/types",
+    // 编译后的js文件输出目录,
+    "outDir": "./dist",
+    // 必须为false（outFile 和 emitDeclarationOnly 冲突）
+    "emitDeclarationOnly": false
   },
   "include": [
     "src",

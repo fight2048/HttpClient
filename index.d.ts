@@ -1,19 +1,16 @@
 import type {
     AxiosError,
+    AxiosInstance,
     AxiosRequestConfig,
     AxiosResponse,
     CreateAxiosDefaults,
     InternalAxiosRequestConfig,
 } from "axios";
-import {
-    defaultRequestInterceptor,
-    defaultResponseInterceptor,
-    DownloadRequestConfig,
-    FileDownloader,
-    FileUploader,
-    HttpClient,
-    InterceptorManager
-} from "./lib";
+import {DownloadRequestConfig, FileDownloader, FileUploader, HttpClient, InterceptorManager} from "./lib";
+import type {HttpClientConfig, HttpRequestConfig, RequestInterceptorConfig, ResponseInterceptorConfig} from './types';
+import {FileDownloader} from './expand/Downloader';
+import {FileUploader} from './expand/Uploader';
+import {InterceptorManager} from './InterceptorManager';
 
 /**
  * HTTP客户端配置类型
@@ -94,20 +91,236 @@ interface R<T = unknown> {
     data?: T;
 }
 
-export {
-    R,
-    HandleErrorMessage,
-    HttpRequestConfig,
-    HttpClientConfig,
-    RequestInterceptorConfig,
-    HttpResponse,
-    ResponseInterceptorConfig,
-    FileDownloader,
-    FileUploader,
-    InterceptorManager,
-    HttpClient,
-    defaultRequestInterceptor,
-    defaultResponseInterceptor,
-    DownloadRequestConfig
-};
+/**
+ * 下载请求配置
+ */
+export type DownloadRequestConfig = {
+    /**
+     * 定义期望获得的数据类型
+     * body: 只返回响应数据的BODY部分(Blob)
+     * raw: 返回原始的AxiosResponse，包括headers、status等
+     */
+    responseReturn?: 'body' | 'raw';
+} & Omit<HttpRequestConfig, 'responseReturn'>;
 
+/**
+ * 文件下载器类
+ * 负责处理文件下载相关的逻辑
+ */
+declare class FileDownloader {
+    private readonly client;
+    private readonly defaultConfig;
+
+    constructor(client: HttpClient);
+
+    /**
+     * 下载文件
+     * @typeParam T - 响应数据的类型，默认Blob
+     * @param url - 文件的完整链接
+     * @param config - 配置信息，可选
+     * @returns 如果config.responseReturn为'body'，则返回Blob(默认)，否则返回AxiosResponse<Blob>
+     */
+    download<T = Blob>(url: string, config?: DownloadRequestConfig): Promise<T>;
+}
+
+export {FileDownloader};
+
+/**
+ * 文件上传数据接口
+ */
+interface UploadData {
+    file: Blob | File;
+
+    [key: string]: any;
+}
+
+/**
+ * 文件上传器类
+ * 负责处理文件上传相关的逻辑
+ */
+declare class FileUploader {
+    private readonly client;
+
+    constructor(client: HttpClient);
+
+    /**
+     * 上传文件
+     * @typeParam T - 响应数据的类型
+     * @param url - 上传URL
+     * @param data - 上传数据，包含file字段
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    upload<T = unknown>(url: string, data: UploadData, config?: HttpRequestConfig): Promise<T>;
+}
+
+export {FileUploader};
+
+export declare const defaultRequestInterceptor: RequestInterceptorConfig;
+export declare const defaultResponseInterceptor: () => ResponseInterceptorConfig;
+
+
+/**
+ * HTTP客户端类
+ * 基于Axios封装的HTTP客户端，支持请求/响应拦截器、文件上传下载等功能
+ */
+declare class HttpClient {
+    /** Axios实例 */
+    readonly INSTANCE: AxiosInstance;
+    /** 添加请求拦截器 */
+    readonly addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
+    /** 添加响应拦截器 */
+    readonly addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
+    /** 下载文件方法 */
+    readonly download: FileDownloader['download'];
+    /** 上传文件方法 */
+    readonly upload: FileUploader['upload'];
+    /** 默认配置 */
+    private readonly defaultConfig;
+
+    /**
+     * 构造函数，用于创建Axios实例
+     * @param options - Axios请求配置，可选
+     */
+    constructor(options?: HttpClientConfig);
+
+    /**
+     * 获取基础URL
+     * @returns 基础URL字符串
+     */
+    getBaseUrl(): string | undefined;
+
+    /**
+     * DELETE请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    delete<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * GET请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    get<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * HEAD请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    head<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * OPTIONS请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    options<T = unknown>(url: string, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * POST请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param data - 请求数据
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    post<T = unknown>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * PUT请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param data - 请求数据
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    put<T = unknown>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * PATCH请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param data - 请求数据
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    patch<T = unknown>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<T>;
+
+    /**
+     * 通用的请求方法
+     * @typeParam T - 响应数据的类型
+     * @param url - 请求URL
+     * @param config - 请求配置
+     * @returns Promise对象
+     */
+    request<T>(config: HttpRequestConfig): Promise<T>;
+}
+
+/**
+ * 反射绑定类实例的方法到该实例上，确保方法中的`this`引用正确
+ * @param instance - 类实例
+ */
+export declare function bindMethods<T extends object>(instance: T): void;
+
+export {HttpClient};
+
+/**
+ * 拦截器管理器
+ * 负责管理请求和响应拦截器的添加和移除
+ */
+declare class InterceptorManager {
+    private readonly httpClient;
+    private readonly requestInterceptorIds;
+    private readonly responseInterceptorIds;
+
+    constructor(instance: AxiosInstance);
+
+    /**
+     * 添加请求拦截器
+     * @param config - 拦截器配置，包含fulfilled和rejected回调
+     * @returns 拦截器ID，可用于移除拦截器
+     */
+    addRequestInterceptor(config?: RequestInterceptorConfig): number;
+
+    /**
+     * 添加响应拦截器
+     * @typeParam T - 响应数据的类型
+     * @param config - 拦截器配置，包含fulfilled和rejected回调
+     * @returns 拦截器ID，可用于移除拦截器
+     */
+    addResponseInterceptor<T = unknown>(config?: ResponseInterceptorConfig<T>): number;
+
+    /**
+     * 移除所有请求拦截器
+     */
+    clearRequestInterceptors(): void;
+
+    /**
+     * 移除所有响应拦截器
+     */
+    clearResponseInterceptors(): void;
+
+    /**
+     * 移除指定的请求拦截器
+     * @param id - 拦截器ID
+     */
+    removeRequestInterceptor(id: number): void;
+
+    /**
+     * 移除指定的响应拦截器
+     * @param id - 拦截器ID
+     */
+    removeResponseInterceptor(id: number): void;
+}
+
+export {InterceptorManager};
