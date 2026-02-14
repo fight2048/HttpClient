@@ -1,5 +1,4 @@
 import type {
-    AxiosError,
     AxiosInstance,
     AxiosRequestConfig,
     AxiosResponse,
@@ -44,19 +43,17 @@ export type HttpResponse<T = unknown> = AxiosResponse<T> & {
  * @typeParam T - 请求配置的类型
  */
 export interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
-    fulfilled?: (config: T) => T | Promise<T>;
-    rejected?: (error: AxiosError) => Promise<never>;
+    fulfilled?: (value: T) => T | Promise<T>;
+    rejected?: (error: unknown) => unknown;
 }
 
 /**
  * 响应拦截器配置
  * @typeParam T - 响应数据的类型
  */
-export interface ResponseInterceptorConfig<T = any> {
-    fulfilled?: (
-        response: HttpResponse<T>,
-    ) => HttpResponse | Promise<HttpResponse>;
-    rejected?: (error: AxiosError) => Promise<never>;
+export interface ResponseInterceptorConfig<T> {
+    fulfilled?: (value: T) => T | Promise<T>;
+    rejected?: (error: unknown) => unknown;
 }
 
 /**
@@ -154,8 +151,7 @@ declare class FileUploader {
 export {FileUploader};
 
 export declare const defaultRequestInterceptor: RequestInterceptorConfig;
-export declare const defaultResponseInterceptor: () => ResponseInterceptorConfig;
-
+export declare const defaultResponseInterceptor: ResponseInterceptorConfig<HttpResponse<any>>;
 
 /**
  * HTTP客户端类
@@ -295,7 +291,7 @@ declare class InterceptorManager {
      * @param config - 拦截器配置，包含fulfilled和rejected回调
      * @returns 拦截器ID，可用于移除拦截器
      */
-    addResponseInterceptor<T = unknown>(config?: ResponseInterceptorConfig<T>): number;
+    addResponseInterceptor(config?: ResponseInterceptorConfig<HttpResponse>): number;
 
     /**
      * 移除所有请求拦截器
