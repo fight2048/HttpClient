@@ -1,6 +1,6 @@
-import type {RequestInterceptorConfig, ResponseInterceptorConfig,} from './types';
+import type {RequestInterceptorConfig, ResponseInterceptorConfig} from './types';
 import {HttpResponse} from "./types";
-import {AxiosError, InternalAxiosRequestConfig,} from 'axios';
+import {InternalAxiosRequestConfig,} from 'axios';
 
 export const defaultRequestInterceptor: RequestInterceptorConfig = {
     fulfilled: (config: InternalAxiosRequestConfig) => {
@@ -26,33 +26,57 @@ export const defaultRequestInterceptor: RequestInterceptorConfig = {
         }
         return config
     },
-    rejected: (error: AxiosError) => {
+    rejected: (error: unknown) => {
         return Promise.reject(error);
     },
 }
 
-export const defaultResponseInterceptor = (): ResponseInterceptorConfig => {
-    return {
-        fulfilled: (response: HttpResponse<any>) => {
-            const {config, data, status} = response;
+// export const defaultResponseInterceptor = (): ResponseInterceptorConfig<HttpResponse<any>> => {
+//     return {
+//         fulfilled: (response: HttpResponse<any>) => {
+//             const {config, data, status} = response;
+//
+//             if (status < 200 || status >= 400) {
+//                 throw Object.assign({}, response, {response});
+//             }
+//
+//             if (config?.responseReturn === 'raw') {
+//                 return response;
+//             }
+//
+//             if (config?.responseReturn === 'body') {
+//                 return data;
+//             }
+//
+//             if (config?.responseReturn === 'data') {
+//                 return (data as { data: unknown })?.data;
+//             }
+//
+//             return response;
+//         },
+//     };
+// };
 
-            if (status < 200 || status >= 400) {
-                throw Object.assign({}, response, {response});
-            }
+export const defaultResponseInterceptor: ResponseInterceptorConfig<HttpResponse<any>> = {
+    fulfilled: (response: HttpResponse<any>) => {
+        const {config, data, status} = response;
 
-            if (config?.responseReturn === 'raw') {
-                return response;
-            }
+        if (status < 200 || status >= 400) {
+            throw Object.assign({}, response, {response});
+        }
 
-            if (config?.responseReturn === 'body') {
-                return data;
-            }
-
-            if (config?.responseReturn === 'data') {
-                return (data as { data: unknown })?.data;
-            }
-
+        if (config?.responseReturn === 'raw') {
             return response;
-        },
-    };
+        }
+
+        if (config?.responseReturn === 'body') {
+            return data;
+        }
+
+        if (config?.responseReturn === 'data') {
+            return (data as { data: unknown })?.data;
+        }
+
+        return response;
+    },
 };

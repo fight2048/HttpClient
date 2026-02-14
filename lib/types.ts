@@ -1,10 +1,4 @@
-import type {
-    AxiosError,
-    AxiosRequestConfig,
-    AxiosResponse,
-    CreateAxiosDefaults,
-    InternalAxiosRequestConfig,
-} from "axios";
+import type {AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, InternalAxiosRequestConfig,} from "axios";
 
 /**
  * HTTP客户端配置类型
@@ -41,19 +35,17 @@ export type HttpResponse<T = unknown> = AxiosResponse<T> & {
  * @typeParam T - 请求配置的类型
  */
 export interface RequestInterceptorConfig<T = InternalAxiosRequestConfig> {
-    fulfilled?: (config: T) => T | Promise<T>;
-    rejected?: (error: AxiosError) => Promise<never>;
+    fulfilled?: (value: T) => T | Promise<T>;
+    rejected?: (error: unknown) => unknown;
 }
 
 /**
  * 响应拦截器配置
  * @typeParam T - 响应数据的类型
  */
-export interface ResponseInterceptorConfig<T = any> {
-    fulfilled?: (
-        response: HttpResponse<T>,
-    ) => HttpResponse | Promise<HttpResponse>;
-    rejected?: (error: AxiosError) => Promise<never>;
+export interface ResponseInterceptorConfig<T> {
+    fulfilled?: (value: T) => T | Promise<T>;
+    rejected?: (error: unknown) => unknown;
 }
 
 /**
